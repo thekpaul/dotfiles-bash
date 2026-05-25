@@ -1,8 +1,13 @@
 # BASHRC: User-specific Bash interactive shell configurations.
 #
 # Responsibilities:
-#   - Bail immediately for non-interactive shells.
+#   - Bail immediately for non-interactive shells:
+#     this guard intentionally lives here and not in main.bash, so that
+#     non-interactive login shells reaching main.bash via .bash_profile
+#     still receive full environment setup;
+#     see .bash_profile and main.bash for rationale.
 #   - Guard system-wide bashrc sourcing against double-execution.
+#   - Source main.bash.
 
 # ── 0. FUNDAMENTALS ──────────────────────────────────────────────────────────
 
@@ -28,3 +33,13 @@ if [[ -z "${BASHRCSOURCED}" ]]; then
     # Set manually in case the system bashrc above did not set it.
     [[ -z "${BASHRCSOURCED}" ]] && BASHRCSOURCED="Y"
 fi
+
+# ── Source the central loader ─────────────────────────────────────────────────
+_bashrc_main="${XDG_CONFIG_HOME:-${HOME}/.config}/bash/main.bash"
+
+if [[ -f "$_bashrc_main" ]]; then
+    source "$_bashrc_main"
+else
+    printf '.bashrc: warning: main.bash not found at %s\n' "$_bashrc_main" >&2
+fi
+unset _bashrc_main
