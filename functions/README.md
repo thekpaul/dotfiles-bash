@@ -3,14 +3,14 @@
 This directory is a Fish-style function library, the analogue of Fish's
 `~/.config/fish/functions/`.
 It is loaded not by the [`../main.bash`](../main.bash) loader directly, but by
-the autoloader [`../conf.d/03_autoload.bash`](../conf.d/03_autoload.bash),
+the autoloader [`../conf.d/01_autoload.bash`](../conf.d/01_autoload.bash),
 which runs early in the core zone.
 
 ## Pairing Convention
 
 Each file defines exactly one function, and the filename (minus `.bash`)
-**must match the function name** — `functions/NAME.bash` defines `NAME()`,
-just as Fish pairs `functions/NAME.fish` with `NAME`.
+**must match the function name** — `functions/add_paths.bash` defines
+`add_paths()`, just as Fish pairs `functions/NAME.fish` with `NAME`.
 The autoloader relies on this pairing to map a stub to its definition file.
 
 ## Load Strategy
@@ -20,6 +20,14 @@ A self-replacing stub is installed for each function; on its first call
 the stub unsets itself, sources this file (defining the real function), then
 dispatches to it — so the body is parsed exactly once, on first use.
 This defers the parse cost and keeps non-interactive shells lean.
+
+## Functions
+
+- [add_paths](./add_paths.bash):
+  Idempotent PATH-manipulation (the Bash analogue of Fish's `fish_add_path`)
+  used by every later module that extends PATH.
+  Shipped lazy: first consumed by `conf.d/02_defaults.bash` on startup, which
+  demonstrates that the lazy path resolves correctly even mid-startup.
 
 ## Authoring Conventions
 
