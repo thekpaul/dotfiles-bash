@@ -8,7 +8,8 @@
 #
 # Idempotent: every assignment is set-if-unset or routed through `add_paths`
 # (which skips entries already on PATH).
-# Depends on: 00_platform.bash (THEKP_FS), 01_add-paths.bash (add_paths).
+# Depends on: 00_platform.bash (THEKP_FS),
+#             01_autoload.bash (add_paths, lazily loaded from ../functions/).
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Alternative XDG_CONFIG_HOME for Windows-based Bash environments ──────────

@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 # ─────────────────────────────────────────────────────────────────────────────
-# 03: AUTOLOAD.bash
+# 01: AUTOLOAD.bash
 # Fish-style function autoloader for the sibling ../functions/ directory.
 # Each functions/NAME.bash file holds one function named NAME
 # (the Bash analogue of Fish's functions/NAME.fish ↔ NAME pairing).
@@ -9,6 +9,11 @@
 # On first call the stub unsets itself, sources its file
 # (defining the real function), then dispatches to it —
 # so the body is parsed exactly once, on first use.
+#
+# add_paths is loaded lazily even though the next core module (02_defaults)
+# calls it during startup: this demonstrates that the lazy mechanism resolves
+# correctly even when first used mid-startup,
+# not only in a later interactive shell.
 #
 # Loaded early in the core zone so subsequent modules can rely on
 # the function names being callable.
@@ -39,7 +44,7 @@ ${_thekp_name}() {
     unset -f ${_thekp_name}
     source ${_thekp_qf}
     if ! declare -F ${_thekp_name} >/dev/null; then
-        printf '03_autoload: %s did not define %s()\n' ${_thekp_qf} ${_thekp_name} >&2
+        printf '01_autoload: %s did not define %s()\n' ${_thekp_qf} ${_thekp_name} >&2
         return 127
     fi
     ${_thekp_name} \"\$@\"

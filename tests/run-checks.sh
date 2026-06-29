@@ -65,17 +65,20 @@ idempotency_check() {
 check "idempotency (stable PATH on re-source)" idempotency_check
 
 # ── 4. add_paths dedup: a repeated entry appears at most once ────────────────
+# Also exercises the autoload path: 01_autoload installs the add_paths stub,
+# and the first call below triggers the lazy source of functions/add_paths.bash.
 add_paths_dedup_check() {
     bash -c '
         source conf.d/00_platform.bash
-        source conf.d/01_add-paths.bash
-        add_paths /usr/bin
+        source conf.d/01_autoload.bash
+        declare -F add_paths >/dev/null || exit 1   # stub installed
+        add_paths /usr/bin                           # first call -> lazy load
         add_paths /usr/bin
         n=$(grep -oc ":/usr/bin:" <<<":${PATH}:")
         (( n <= 1 ))
     ' >/dev/null 2>&1
 }
-check "add_paths dedup (/usr/bin once)" add_paths_dedup_check
+check "add_paths dedup + autoload (/usr/bin once)" add_paths_dedup_check
 
 # ── 5. TMPDIR test mode: helpers stay in scope when autorun is disabled ──────
 tmpdir_testmode_check() {
@@ -93,6 +96,22 @@ platform_check() {
     [[ "$got" == "linux-gnu" ]]
 }
 check "platform detection (THEKP_FS=linux-gnu)" platform_check
+
+# ── 7. Autoload swap: stub before first call, real body after ────────────────
+# Confirms the lazy mechanism actually defers the body: immediately after
+# sourcing the loader, add_paths is the self-replacing stub (its definition
+# mentions the source line); after one call it has been replaced by the real
+# function (whose body contains the relative-path guard message).
+autoload_swap_check() {
+    bash -c '
+        source conf.d/00_platform.bash
+        source conf.d/01_autoload.bash
+        declare -f add_paths | grep -q "source " || exit 1   # stub present
+        add_paths /nonexistent-dir-xyz >/dev/null 2>&1        # trigger load
+        declare -f add_paths | grep -q "Refusing relative path" || exit 1
+    ' >/dev/null 2>&1
+}
+check "autoload swap (stub -> real on first call)" autoload_swap_check
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"

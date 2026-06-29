@@ -1,13 +1,16 @@
 # shellcheck shell=bash
 # ─────────────────────────────────────────────────────────────────────────────
-# 01: ADD-PATHS.bash
+# add_paths.bash  (autoloaded function)
 # Defines `add_paths`, the idempotent PATH-manipulation primitive
 # used by every later module that extends PATH
 # (the Bash analogue of Fish's built-in `fish_add_path`).
-# Loaded early in the core zone so subsequent modules can rely on it.
-# May later move into a dedicated `functions/` autoload directory.
 #
-# Idempotent: this module only defines a function;
+# Loaded on demand by conf.d/01_autoload.bash: the matching stub sources this
+# file on first call, then dispatches to the function defined below.
+# The filename (minus `.bash`) MUST match the function name so the autoloader
+# can pair them — exactly as Fish pairs `functions/NAME.fish` with `NAME`.
+#
+# Idempotent: this file only defines a function;
 # the function itself skips directories already present in PATH, so
 # repeated calls never duplicate entries.
 # Depends on: 00_platform.bash (THEKP_FS, consumed at call time for cygpath).

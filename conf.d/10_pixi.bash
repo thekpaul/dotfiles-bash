@@ -8,7 +8,8 @@
 #
 # Idempotent: PIXI_HOME is set only when unset; the bin directory is added via
 # `add_paths`, which skips entries already present on PATH.
-# Depends on: 02_defaults.bash (LOCAL_OPT_HOME), 01_add-paths.bash (add_paths).
+# Depends on: 02_defaults.bash (LOCAL_OPT_HOME),
+#             01_autoload.bash (add_paths, lazily loaded from ../functions/).
 # ─────────────────────────────────────────────────────────────────────────────
 
 if [[ -z ${PIXI_HOME} && -d ${LOCAL_OPT_HOME}/pixi ]]; then

@@ -21,15 +21,14 @@ and other essential behavior that all subsequent scripts depend on.
 - [00 Platform](./00_platform.bash):
   Detects the platform family into `THEKP_FS`; loads first so later modules can
   branch on it.
-- [01 add_paths](./01_add-paths.bash):
-  Idempotent PATH-manipulation primitive (the Bash analogue of Fish's
-  `fish_add_path`) used by every later module that extends PATH.
+- [01 Autoload](./01_autoload.bash):
+  Fish-style autoloader for the sibling [`../functions/`](../functions) subdir;
+  installs a self-replacing lazy stub for each function. `add_paths`
+  (the idempotent PATH primitive used by every later module that extends PATH)
+  ships here and is loaded lazily on its first call.
 - [02 Defaults](./02_defaults.bash):
   Base directories (`XDG_CONFIG_HOME`, `LOCAL_OPT_HOME`), the user binary
   directory on PATH, and `EDITOR`/`VISUAL`.
-- [03 Autoload](./03_autoload.bash):
-  Fish-style autoloader for the sibling [`../functions/`](../functions) subdir;
-  installs a self-replacing lazy stub for each function, loaded on first call.
 - [05 TMPDIR](./05_tmpdir.bash):
   Selects and exports a persistent, sticky-bit-hardened per-user `TMPDIR`,
   preferring fast tmpfs scratch space.
