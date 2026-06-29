@@ -33,6 +33,7 @@ fi
 _bash_main_dir="${BASH_SOURCE[0]%/*}"
 
 for _bash_f in "$_bash_main_dir"/conf.d/[0-9][0-9]_*.bash; do
+    # shellcheck source=/dev/null
     [[ -f "$_bash_f" ]] && source "$_bash_f"
 done
 
