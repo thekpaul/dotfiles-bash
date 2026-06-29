@@ -85,6 +85,10 @@ The final zone contains scripts that integrate personal tools, rare utilities,
 legacy behavior, or experimental features.
 They load last to ensure they can rely on the full environment.
 
+- [90 Prompt](./90_prompt.bash):
+  Custom interactive prompt with a failed-command exit-status marker and a
+  red root-session indicator.
+
 ## Authoring Conventions
 
 New modules follow a small set of conventions so the suite stays reusable,
