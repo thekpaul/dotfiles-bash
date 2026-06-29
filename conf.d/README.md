@@ -56,3 +56,25 @@ These scripts are optional and may override or extend earlier configuration.
 The final zone contains scripts that integrate personal tools, rare utilities,
 legacy behavior, or experimental features.
 They load last to ensure they can rely on the full environment.
+
+## Authoring Conventions
+
+New modules follow a small set of conventions so the suite stays reusable,
+unit-testable, and idempotent:
+
+- **Header.** Begin with `# shellcheck shell=bash`, then
+  a `# NN: NAME.bash` line, a one-line purpose, and a short description
+  covering behaviour, idempotency, prerequisites, and side-effects.
+- **Indentation.** Four spaces for new modules.
+- **Session guards.** Environment-only modules run unconditionally
+  (so non-interactive login shells are configured too).
+  Modules that emit output or only make sense interactively
+  start with `[[ $- == *i* ]] || return`;
+  host-specific modules return early when their host test fails.
+- **Idempotency.** Re-sourcing must not duplicate state or cause harm:
+  prefer set-if-unset assignments and
+  guard `readonly` declarations so a second source does not abort.
+- **Testability.** Every module must source standalone and pass `shellcheck -x`
+  (configuration in [`../.shellcheckrc`](../.shellcheckrc)).
+  Modules that auto-run side-effecting logic expose a `*_NO_AUTORUN` hook for
+  in-scope testing.
