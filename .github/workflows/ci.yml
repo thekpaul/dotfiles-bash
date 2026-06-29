@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: shellcheck --version
-      - run: shellcheck -x main.bash conf.d/*.bash   # honours .shellcheckrc
+      - run: shellcheck -x main.bash conf.d/*.bash functions/*.bash   # honours .shellcheckrc
 
   compat:
     name: Sourceability (${{ matrix.name }})

@@ -27,6 +27,9 @@ and other essential behavior that all subsequent scripts depend on.
 - [02 Defaults](./02_defaults.bash):
   Base directories (`XDG_CONFIG_HOME`, `LOCAL_OPT_HOME`), the user binary
   directory on PATH, and `EDITOR`/`VISUAL`.
+- [03 Autoload](./03_autoload.bash):
+  Fish-style autoloader for the sibling [`../functions/`](../functions) subdir;
+  installs a self-replacing lazy stub for each function, loaded on first call.
 - [05 TMPDIR](./05_tmpdir.bash):
   Selects and exports a persistent, sticky-bit-hardened per-user `TMPDIR`,
   preferring fast tmpfs scratch space.
