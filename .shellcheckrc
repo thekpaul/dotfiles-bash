@@ -1,0 +1,8 @@
+# ShellCheck configuration for the Bash configuration modules.
+#
+# conf.d/*.bash are sourced fragments with no shebang line; `shell=bash` sets
+# the dialect so ShellCheck analyses them as Bash rather than refusing to run.
+# `external-sources=true` lets `shellcheck -x` follow `source`d files when asked.
+
+shell=bash
+external-sources=true
