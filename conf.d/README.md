@@ -41,6 +41,9 @@ version managers, and other systems that modify PATHs or provide runtime shims.
 These scripts should load after core setup but before language- or
 tool-specific configuration.
 
+- [10 Pixi](./10_pixi.bash):
+  Registers a Pixi installation and adds its global binary directory to PATH.
+
 ### `20` - `39`: Language- and Tool-Specific Environments
 
 Scripts in this range configure individual ecosystems such as TeX, Ruby
