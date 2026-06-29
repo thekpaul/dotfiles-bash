@@ -24,6 +24,9 @@ and other essential behavior that all subsequent scripts depend on.
 - [01 add_paths](./01_add-paths.bash):
   Idempotent PATH-manipulation primitive (the Bash analogue of Fish's
   `fish_add_path`) used by every later module that extends PATH.
+- [02 Defaults](./02_defaults.bash):
+  Base directories (`XDG_CONFIG_HOME`, `LOCAL_OPT_HOME`), the user binary
+  directory on PATH, and `EDITOR`/`VISUAL`.
 
 ### `10` - `19`: Runtime and Language Managers
 
