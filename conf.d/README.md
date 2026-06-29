@@ -51,6 +51,9 @@ tooling, Python utilities, Rust environments, or other domain-specific
 development setups.
 They assume that any underlying runtime managers are already loaded.
 
+- [20 Cargo](./20_cargo.bash):
+  Initialises the Rust toolchain environment from `~/.cargo/env`.
+
 ### `40` - `59`: System Integrations
 
 These files configure integrations with system-level utilities—such as tmux,
