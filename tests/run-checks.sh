@@ -44,16 +44,20 @@ syntax_check() {
 check "syntax (bash -n)" syntax_check
 
 # ── 2. Full load: sourcing main.bash exits clean ─────────────────────────────
+# Use the ./ path form: `source main.bash` (bare) is resolved via PATH,
+# leaving BASH_SOURCE[0] without a slash so the loader's dir-relative glob
+# matches nothing and loads zero modules.
+# Real callers source by path.
 load_check() {
-    bash -c 'source main.bash' >/dev/null 2>&1
+    bash -c 'source ./main.bash' >/dev/null 2>&1
 }
-check "full load (source main.bash)" load_check
+check "full load (source ./main.bash)" load_check
 
 # ── 3. Idempotency: PATH is byte-identical across two consecutive loads ──────
 idempotency_check() {
     bash -c '
-        source main.bash; a="$PATH"
-        source main.bash; b="$PATH"
+        source ./main.bash; a="$PATH"
+        source ./main.bash; b="$PATH"
         [[ "$a" == "$b" ]]
     ' >/dev/null 2>&1
 }
