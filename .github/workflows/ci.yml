@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]            # direct commits landing on main
+  pull_request:
+    branches: [main]            # PRs targeting main — checked pre-merge
+  workflow_dispatch:            # manual run button
+
+jobs:
+  shellcheck:
+    name: ShellCheck (static analysis)
+    runs-on: ubuntu-latest      # runner-preinstalled shellcheck; one run suffices
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck --version
+      - run: shellcheck -x main.bash conf.d/*.bash   # honours .shellcheckrc
+
+  compat:
+    name: Sourceability (${{ matrix.name }})
+    runs-on: ubuntu-latest      # RHEL8/CentOS7 run as containers here — no extra cost
+    strategy:
+      fail-fast: false          # report every environment, not just the first to fail
+      matrix:
+        include:
+          - { name: ubuntu-24.04, image: "" }                        # native host
+          - { name: rhel8,        image: "redhat/ubi8" }             # el8 parity
+          - { name: centos7,      image: "quay.io/centos/centos:7" } # bash 4.2
+    steps:
+      - uses: actions/checkout@v4   # on host; node20 needs glibc absent from CentOS 7
+      - name: Run checks
+        run: |
+          if [ -z "${{ matrix.image }}" ]; then
+            bash tests/run-checks.sh
+          else
+            docker run --rm -v "$PWD":/repo -w /repo "${{ matrix.image }}" \
+              bash tests/run-checks.sh
+          fi
