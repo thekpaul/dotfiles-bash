@@ -353,7 +353,7 @@ _classify_tmpfs() {
 # _pick_tmpdir
 # Selection driver. Always emits a path.
 _pick_tmpdir() {
-    local best="" best_avail=0
+    local best=""
     local best_a="" best_a_mb=0
     local best_b="" best_b_mb=0
     local mountpoint effective_mb tier _unused
@@ -389,8 +389,8 @@ _pick_tmpdir() {
         done < <(df --output=avail,target -m -t tmpfs 2>/dev/null | tail -n +2)
 
         # Prefer A → B; within the chosen tier, the largest already won.
-        if   [[ -n "$best_a" ]]; then best="$best_a"; best_avail="$best_a_mb"
-        elif [[ -n "$best_b" ]]; then best="$best_b"; best_avail="$best_b_mb"
+        if   [[ -n "$best_a" ]]; then best="$best_a"
+        elif [[ -n "$best_b" ]]; then best="$best_b"
         fi
     fi
 
