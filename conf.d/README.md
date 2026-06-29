@@ -67,6 +67,9 @@ functions, and other quality-of-life improvements.
 These scripts may rely on previously configured tools and should remain
 lightweight to avoid slowing startup.
 
+- [65 Aliases](./65_aliases.bash):
+  Interactive convenience aliases; skipped entirely in non-interactive shells.
+
 ### `80` - `89`: Host or Context-Specific Overrides
 
 Files here provide behavior tailored to particular machines, operating systems,
