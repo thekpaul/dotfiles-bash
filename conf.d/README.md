@@ -21,6 +21,9 @@ and other essential behavior that all subsequent scripts depend on.
 - [00 Platform](./00_platform.bash):
   Detects the platform family into `THEKP_FS`; loads first so later modules can
   branch on it.
+- [01 add_paths](./01_add-paths.bash):
+  Idempotent PATH-manipulation primitive (the Bash analogue of Fish's
+  `fish_add_path`) used by every later module that extends PATH.
 
 ### `10` - `19`: Runtime and Language Managers
 
@@ -76,8 +79,8 @@ unit-testable, and idempotent:
   start with `[[ $- == *i* ]] || return`;
   host-specific modules return early when their host test fails.
 - **Idempotency.** Re-sourcing must not duplicate state or cause harm:
-  prefer set-if-unset assignments and
-  guard `readonly` declarations so a second source does not abort.
+  prefer set-if-unset assignments, route PATH additions through `add_paths`
+  and guard `readonly` declarations so a second source does not abort.
 - **Testability.** Every module must source standalone and pass `shellcheck -x`
   (configuration in [`../.shellcheckrc`](../.shellcheckrc)).
   Modules that auto-run side-effecting logic expose a `*_NO_AUTORUN` hook for
