@@ -76,6 +76,9 @@ Files here provide behavior tailored to particular machines, operating systems,
 environments, or work contexts.
 These scripts are optional and may override or extend earlier configuration.
 
+- [80 PDK](./80_pdk.bash):
+  Host-specific overrides for laboratory PDK servers (site profile, umask).
+
 ### `90` - `99`: Application-Specific or Experimental Modules
 
 The final zone contains scripts that integrate personal tools, rare utilities,
