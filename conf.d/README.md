@@ -30,6 +30,9 @@ and other essential behavior that all subsequent scripts depend on.
 - [05 TMPDIR](./05_tmpdir.bash):
   Selects and exports a persistent, sticky-bit-hardened per-user `TMPDIR`,
   preferring fast tmpfs scratch space.
+- [09 sysexits](./09_sysexits.bash):
+  `sysexits.h` exit-status constants (`EX_*`) for use throughout this
+  configuration.
 
 ### `10` - `19`: Runtime and Language Managers
 
