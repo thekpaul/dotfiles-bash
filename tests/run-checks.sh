@@ -36,7 +36,8 @@ check() {
 syntax_check() {
     local f rc=0
     bash -n main.bash || rc=1
-    for f in conf.d/[0-9][0-9]_*.bash; do
+    for f in conf.d/[0-9][0-9]_*.bash functions/*.bash; do
+        [[ -e "$f" ]] || continue
         bash -n "$f" || { printf '  syntax error: %s\n' "$f" >&2; rc=1; }
     done
     return "$rc"
