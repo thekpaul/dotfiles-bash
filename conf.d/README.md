@@ -27,6 +27,9 @@ and other essential behavior that all subsequent scripts depend on.
 - [02 Defaults](./02_defaults.bash):
   Base directories (`XDG_CONFIG_HOME`, `LOCAL_OPT_HOME`), the user binary
   directory on PATH, and `EDITOR`/`VISUAL`.
+- [05 TMPDIR](./05_tmpdir.bash):
+  Selects and exports a persistent, sticky-bit-hardened per-user `TMPDIR`,
+  preferring fast tmpfs scratch space.
 
 ### `10` - `19`: Runtime and Language Managers
 
@@ -87,4 +90,4 @@ unit-testable, and idempotent:
 - **Testability.** Every module must source standalone and pass `shellcheck -x`
   (configuration in [`../.shellcheckrc`](../.shellcheckrc)).
   Modules that auto-run side-effecting logic expose a `*_NO_AUTORUN` hook for
-  in-scope testing.
+  in-scope testing, as in [`05_tmpdir.bash`](./05_tmpdir.bash).
