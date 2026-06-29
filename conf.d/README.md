@@ -18,6 +18,10 @@ Files in this range establish the fundamental shell environment, including PATH
 construction, locale settings, default variables, keybindings, UI adjustments,
 and other essential behavior that all subsequent scripts depend on.
 
+- [00 Platform](./00_platform.bash):
+  Detects the platform family into `THEKP_FS`; loads first so later modules can
+  branch on it.
+
 ### `10` - `19`: Runtime and Language Managers
 
 This zone initializes environment managers such as Pixi, Nix, various tooling
