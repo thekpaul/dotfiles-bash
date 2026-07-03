@@ -40,6 +40,11 @@ This defers the parse cost and keeps non-interactive shells lean.
   (`gio trash`, `trash-put`, `trash`, or `recycle`, keyed by `THEKP_FS`)
   with confirmation, falling back to `rm -i`;
   non-interactive shells pass through untouched.
+- [pdk](./pdk.bash):
+  Environmental-scripts wrapper for lab PDK servers:
+  lists available scripts when called bare and sources one into current session
+  (confirming first for paths outside the PDK directory).
+  Complements the host-gated session setup in `conf.d/80_pdk.bash`.
 - [vnclist](./vnclist.bash):
   VNC server usage on the current host, per display or per user (`-u`),
   parsed from the `ps` process list.
