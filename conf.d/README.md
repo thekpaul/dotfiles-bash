@@ -23,9 +23,10 @@ and other essential behavior that all subsequent scripts depend on.
   branch on it.
 - [01 Autoload](./01_autoload.bash):
   Fish-style autoloader for the sibling [`../functions/`](../functions) subdir;
-  installs a self-replacing lazy stub for each function. `add_paths`
-  (the idempotent PATH primitive used by every later module that extends PATH)
-  ships here and is loaded lazily on its first call.
+  installs a self-replacing lazy stub for each function so every function there
+  (see its README for the list) is loaded lazily on its first call.
+  `add_paths`, an idempotent PATH primitive used by modules to extend PATH,
+  ships this way.
 - [02 Defaults](./02_defaults.bash):
   Base directories (`XDG_CONFIG_HOME`, `LOCAL_OPT_HOME`), the user binary
   directory on PATH, and `EDITOR`/`VISUAL`.
@@ -71,6 +72,8 @@ lightweight to avoid slowing startup.
 
 - [65 Aliases](./65_aliases.bash):
   Interactive convenience aliases; skipped entirely in non-interactive shells.
+  Names served by autoloaded functions (e.g. `lsa`) are deliberately absent,
+  since aliases would shadow them.
 
 ### `80` - `89`: Host or Context-Specific Overrides
 

@@ -127,6 +127,19 @@ autoload_cd_check() {
 }
 check "autoload cd-safety (stub loads after cd)" autoload_cd_check
 
+# ── 9. Stub coverage: every functions/*.bash file gets an autoload stub ──────
+stub_coverage_check() {
+    bash -c '
+        source conf.d/00_platform.bash
+        source conf.d/01_autoload.bash
+        for f in functions/*.bash; do
+            n="${f##*/}"; n="${n%.bash}"
+            declare -F "$n" >/dev/null || exit 1
+        done
+    ' >/dev/null 2>&1
+}
+check "autoload stub coverage (all functions/*.bash)" stub_coverage_check
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"
 if (( _failures == 0 )); then

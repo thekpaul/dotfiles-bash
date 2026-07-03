@@ -28,6 +28,14 @@ This defers the parse cost and keeps non-interactive shells lean.
   used by every later module that extends PATH.
   Shipped lazy: first consumed by `conf.d/02_defaults.bash` on startup, which
   demonstrates that the lazy path resolves correctly even mid-startup.
+- [lsa](./lsa.bash):
+  "List all" directory listing: prefers `eza`, falling back to
+  a compatible `ls` per platform (branching on `THEKP_FS`).
+- [lscd](./lscd.bash):
+  Change directory and list the new location, via `lsa` when available.
+- [tree](./tree.bash):
+  Recursive tree listing: `eza`-backed through `lsa`, falling back to
+  the real `tree` command.
 
 ## Authoring Conventions
 
