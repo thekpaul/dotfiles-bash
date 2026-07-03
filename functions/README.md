@@ -33,6 +33,8 @@ This defers the parse cost and keeps non-interactive shells lean.
   a compatible `ls` per platform (branching on `THEKP_FS`).
 - [lscd](./lscd.bash):
   Change directory and list the new location, via `lsa` when available.
+- [mkcd](./mkcd.bash):
+  Create a directory (parents included) and change into it.
 - [tree](./tree.bash):
   Recursive tree listing: `eza`-backed through `lsa`, falling back to
   the real `tree` command.

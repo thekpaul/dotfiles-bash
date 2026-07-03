@@ -140,6 +140,20 @@ stub_coverage_check() {
 }
 check "autoload stub coverage (all functions/*.bash)" stub_coverage_check
 
+# ── 10. mkcd behaviour: creates a nested directory and enters it ─────────────
+# Exercises a second function end-to-end through the lazy autoload path.
+mkcd_check() {
+    bash -c '
+        source conf.d/00_platform.bash
+        source conf.d/01_autoload.bash
+        tmp="$(mktemp -d)" || exit 1
+        trap '\''rm -rf "$tmp"'\'' EXIT
+        mkcd "$tmp/a/b" || exit 1
+        [[ "$PWD" == "$tmp/a/b" ]]
+    ' >/dev/null 2>&1
+}
+check "mkcd (creates nested dir and enters it)" mkcd_check
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"
 if (( _failures == 0 )); then
