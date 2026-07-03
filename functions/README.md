@@ -40,6 +40,9 @@ This defers the parse cost and keeps non-interactive shells lean.
   (`gio trash`, `trash-put`, `trash`, or `recycle`, keyed by `THEKP_FS`)
   with confirmation, falling back to `rm -i`;
   non-interactive shells pass through untouched.
+- [vnclist](./vnclist.bash):
+  VNC server usage on the current host, per display or per user (`-u`),
+  parsed from the `ps` process list.
 - [tree](./tree.bash):
   Recursive tree listing: `eza`-backed through `lsa`, falling back to
   the real `tree` command.
