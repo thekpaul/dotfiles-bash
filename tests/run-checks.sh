@@ -113,6 +113,20 @@ autoload_swap_check() {
 }
 check "autoload swap (stub -> real on first call)" autoload_swap_check
 
+# ── 8. Autoload cd-safety: a stub still resolves after the CWD changes ───────
+# The loader is sourced by relative path here, so
+# this fails unless the stub froze an absolute file path.
+autoload_cd_check() {
+    bash -c '
+        source conf.d/00_platform.bash
+        source conf.d/01_autoload.bash
+        cd / || exit 1
+        add_paths /usr/bin
+        declare -f add_paths | grep -q "Refusing relative path"
+    ' >/dev/null 2>&1
+}
+check "autoload cd-safety (stub loads after cd)" autoload_cd_check
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"
 if (( _failures == 0 )); then

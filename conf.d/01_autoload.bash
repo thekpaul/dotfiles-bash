@@ -25,9 +25,12 @@
 # Depends on: 00_platform.bash (THEKP_FS, consumed by autoloaded functions).
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Resolve the functions/ directory relative to this file, regardless of CWD.
+# Resolve the functions/ directory relative to this file, regardless of CWD,
+# then canonicalise to an absolute path: the stubs freeze this path and
+# may fire after the CWD has changed (e.g. inside a function that `cd`s first).
 _thekp_fn_dir="${BASH_SOURCE[0]%/*}/../functions"
 [[ -d "$_thekp_fn_dir" ]] || return 0
+_thekp_fn_dir="$(cd "$_thekp_fn_dir" && pwd)" || return 0
 
 for _thekp_f in "$_thekp_fn_dir"/*.bash; do
     [[ -e "$_thekp_f" ]] || continue            # guard the no-match glob
