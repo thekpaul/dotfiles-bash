@@ -154,6 +154,18 @@ mkcd_check() {
 }
 check "mkcd (creates nested dir and enters it)" mkcd_check
 
+# ── 11. rm passthrough: non-interactive shells delete without prompting ──────
+rm_passthrough_check() {
+    bash -c '
+        source conf.d/00_platform.bash
+        source conf.d/01_autoload.bash
+        tmp="$(mktemp)" || exit 1
+        rm "$tmp" < /dev/null || exit 1
+        [[ ! -e "$tmp" ]]
+    ' >/dev/null 2>&1
+}
+check "rm passthrough (non-interactive, no prompt)" rm_passthrough_check
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"
 if (( _failures == 0 )); then

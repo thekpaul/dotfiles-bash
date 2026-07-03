@@ -72,8 +72,8 @@ lightweight to avoid slowing startup.
 
 - [65 Aliases](./65_aliases.bash):
   Interactive convenience aliases; skipped entirely in non-interactive shells.
-  Names served by autoloaded functions (e.g. `lsa`) are deliberately absent,
-  since aliases would shadow them.
+  Names served by autoloaded functions (e.g. `lsa`, `rm`) are
+  deliberately absent, since aliases would shadow them.
 
 ### `80` - `89`: Host or Context-Specific Overrides
 

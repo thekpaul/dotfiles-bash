@@ -35,6 +35,11 @@ This defers the parse cost and keeps non-interactive shells lean.
   Change directory and list the new location, via `lsa` when available.
 - [mkcd](./mkcd.bash):
   Create a directory (parents included) and change into it.
+- [rm](./rm.bash):
+  Safer removal: offers a platform-appropriate Trash backend
+  (`gio trash`, `trash-put`, `trash`, or `recycle`, keyed by `THEKP_FS`)
+  with confirmation, falling back to `rm -i`;
+  non-interactive shells pass through untouched.
 - [tree](./tree.bash):
   Recursive tree listing: `eza`-backed through `lsa`, falling back to
   the real `tree` command.
