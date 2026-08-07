@@ -5,7 +5,9 @@ This repository tracks configurations for the Bash shell.
 
 ## Installation Methods
 
-Install this repository at `$XDG_CONFIG_HOME/bash`:
+Install this repository at `$XDG_CONFIG_HOME/bash`;
+if environment variable `XDG_CONFIG_HOME` is not set on your system,
+use default fallback `$HOME/.config`:
 
 > [!IMPORTANT]
 > While the Bash shell sources its configuration from hard-coded paths such as
@@ -22,17 +24,27 @@ Install this repository at `$XDG_CONFIG_HOME/bash`:
 
 Create a new Git worktree from the submodule copy inside your
 local superproject installation to the destination path:
-```sh
-git worktree add $XDG_CONFIG_HOME/bash -b main --track <remote_name>/main
-```
+- Unix-based systems:
+  ```sh
+  git worktree add ${XDG_CONFIG_HOME:-~/.config}/bash -b main --track <remote_name>/main
+  ```
+- Windows systems with PowerShell:
+  ```pwsh
+  git worktree add "$($env:XDG_CONFIG_HOME ?? "$HOME\.config")\bash" -b main --track <remote_name>/main
+  ```
 where `remote_name` is the name of the "remote" repository from which
 your superproject installation is cloned.
 
 ### Standalone Installation from Remote
 
-```sh
-git clone https://github.com/thekpaul/dotfiles-bash.git $XDG_CONFIG_HOME/bash
-```
+- Unix-based systems:
+  ```sh
+  git clone https://github.com/thekpaul/dotfiles-bash.git ${XDG_CONFIG_HOME:-~/.config}/bash
+  ```
+- Windows systems with PowerShell:
+  ```pwsh
+  git clone https://github.com/thekpaul/dotfiles-bash.git "$($env:XDG_CONFIG_HOME ?? "$HOME\.config")\bash"
+  ```
 
 ### (Sym)link from Local Superproject Installation (Not recommended)
 
@@ -46,7 +58,7 @@ git clone https://github.com/thekpaul/dotfiles-bash.git $XDG_CONFIG_HOME/bash
 
 - Unix-based systems where `ln` is available:
   ```sh
-  ln -s <SUPERPROJECT_INSTALLATION_PATH>/bash $XDG_CONFIG_HOME/bash
+  ln -s <SUPERPROJECT_INSTALLATION_PATH>/bash ${XDG_CONFIG_HOME:-~/.config}/bash
   ```
   Using the `-s` flag creates a "symbolic" ("soft") link, which is
   most likely to be the only type of link possible to create for directories
@@ -55,7 +67,7 @@ git clone https://github.com/thekpaul/dotfiles-bash.git $XDG_CONFIG_HOME/bash
   possible for **individual files**.
 - Windows systems with PowerShell, using the `New-Item` cmdlet:
   ```pwsh
-  New-Item -Path $env:XDG_CONFIG_HOME\bash -ItemType Junction -Value <SUPERPROJECT_INSTALLATION_PATH>\bash
+  New-Item -Path "$($env:XDG_CONFIG_HOME ?? "$HOME\.config")\bash" -ItemType Junction -Value <SUPERPROJECT_INSTALLATION_PATH>\bash
   ```
   `ItemType` may be changed to `HardLink` for **individual files** or
   `SymbolicLink` to create "shortcut"s ("symbolic" links).
@@ -68,15 +80,15 @@ Make sure to use the _full path_ for `<SUPERPROJECT_INSTALLATION_PATH>`.
 necessary for Bash shell to recognise the configuration scripts on startup.
 - Unix-based systems where `ln` is available:
   ```sh
-  ln -s $XDG_CONFIG_HOME/bash/.bash{rc,_profile} ~
+  ln -s ${XDG_CONFIG_HOME:-~/.config}/bash/.bash{rc,_profile} ~
   ```
   Using the `-s` flag creates a "symbolic" ("soft") link, while omitting the
   `-s` flag creates a "hard" link.
   Both are possible for individual files.
 - Windows systems with PowerShell, using the `New-Item` cmdlet:
   ```pwsh
-  New-Item -Path $env:USERPROFILE\.bashrc       -ItemType HardLink -Value $env:XDG_CONFIG_HOME\bash\.bashrc
-  New-Item -Path $env:USERPROFILE\.bash_profile -ItemType HardLink -Value $env:XDG_CONFIG_HOME\bash\.bash_profile
+  New-Item -Path $env:USERPROFILE\.bashrc       -ItemType HardLink -Value "$($env:XDG_CONFIG_HOME ?? "$HOME\.config")\bash\.bashrc"
+  New-Item -Path $env:USERPROFILE\.bash_profile -ItemType HardLink -Value "$($env:XDG_CONFIG_HOME ?? "$HOME\.config")\bash\.bash_profile"
   ```
   `ItemType` may be changed to `SymbolicLink` to create "shortcut"s
   ("symbolic" links).
