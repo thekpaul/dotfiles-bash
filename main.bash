@@ -38,3 +38,16 @@ for _bash_f in "$_bash_main_dir"/conf.d/[0-9][0-9]_*.bash; do
 done
 
 unset _bash_f _bash_main_dir
+
+# ── Optional Fish login-shell handoff ────────────────────────────────────────
+# The opt-in policy lives with the Fish configuration rather than in Bash.
+# Source its bridge only for an interactive Bash login shell: non-login Bash
+# sessions and remote command execution remain in Bash for POSIX compatibility.
+_bash_fish_bridge="${XDG_CONFIG_HOME:-${HOME}/.config}/fish/bash-login.sh"
+
+if [[ $- == *i* ]] && shopt -q login_shell && [[ -r "$_bash_fish_bridge" ]]; then
+    # shellcheck source=/dev/null
+    source "$_bash_fish_bridge"
+fi
+
+unset _bash_fish_bridge
