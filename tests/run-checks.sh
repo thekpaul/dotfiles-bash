@@ -412,6 +412,77 @@ sysexits_check() {
 }
 check "sysexits (constants correct and readonly)" sysexits_check
 
+# ── 22. TMPDIR quota policy: skip tmpfs without quota option; -i on disk ─────
+# A fake `quota` records its argv;
+# the binder carries only bash and grep, so the fake is the one found.
+# Helpers run in test mode (TMPDIR_NO_AUTORUN=1), so
+# no real selection or directory creation happens.
+tmpdir_quota_policy_check() {
+    local binder
+    binder="$(make_binder bash grep)" || return 1
+    trap 'rm -rf "$binder"; trap - RETURN' RETURN
+    cat > "$binder/quota" <<'FAKE_QUOTA'
+#!/bin/sh
+printf '%s\n' "$@" > "${FAKE_QUOTA_LOG:?}"
+exit 1
+FAKE_QUOTA
+    chmod +x "$binder/quota" || return 1
+
+    # (a) tmpfs without a quota mount option: quota must not be invoked at all
+    FAKE_QUOTA_LOG="$binder/argv" PATH="$binder" TMPDIR_NO_AUTORUN=1 bash -c '
+        source '"$REPO_ROOT"'/conf.d/05_tmpdir.bash
+        _check_quota_avail_mb /dev/shm tmpfs
+        [[ ! -e "$FAKE_QUOTA_LOG" ]]
+    ' >/dev/null 2>&1 || return 1
+
+    # (b) on-disk filesystem: quota runs with -i (--no-autofs) and the mountpoint
+    FAKE_QUOTA_LOG="$binder/argv" PATH="$binder" TMPDIR_NO_AUTORUN=1 bash -c '
+        source '"$REPO_ROOT"'/conf.d/05_tmpdir.bash
+        _check_quota_avail_mb /var/tmp ext4
+        grep -qx -- -i "$FAKE_QUOTA_LOG" && grep -qx -- /var/tmp "$FAKE_QUOTA_LOG"
+    ' >/dev/null 2>&1
+}
+check "tmpdir quota policy (skip tmpfs w/o quota; -i on disk)" tmpdir_quota_policy_check
+
+# ── 23. TMPDIR probe bound: a hung probe returns 124 within the timeout ──────
+# Degrades (returns success without asserting) when timeout(1) is absent,
+# where _tmpdir_probe deliberately runs commands unbounded.
+tmpdir_probe_timeout_check() {
+    TMPDIR_NO_AUTORUN=1 TMPDIR_PROBE_TIMEOUT=1 bash -c '
+        source '"$REPO_ROOT"'/conf.d/05_tmpdir.bash
+        command -v timeout >/dev/null 2>&1 || exit 0
+        SECONDS=0
+        _tmpdir_probe sleep 30
+        rc=$?
+        (( rc == 124 )) && (( SECONDS < 5 ))
+    ' >/dev/null 2>&1
+}
+check "tmpdir probe bound (hung probe -> 124 in time)" tmpdir_probe_timeout_check
+
+# ── 24. TMPDIR hung probes: selection still yields a usable path, bounded ────
+# Fake `df` and `quota` never return; with the probe timeout tightened to 1s
+# every phase must time out and fall through to the last-resort path.
+# The outer timeout turns a regression into a failure rather than a hang.
+# USER is overridden so the directories created along the way are disposable.
+tmpdir_hung_probe_check() {
+    local binder sleep_bin out slug=thekp-ci-probe
+    binder="$(make_binder bash timeout tail stat id chmod install mkdir)" || return 1
+    trap 'rm -rf "$binder" /tmp/'"$slug"'-tmp /var/tmp/'"$slug"'-tmp; trap - RETURN' RETURN
+    sleep_bin="$(type -P sleep)" || return 1
+    printf '#!/bin/sh\nexec %s 30\n' "$sleep_bin" > "$binder/df"    || return 1
+    printf '#!/bin/sh\nexec %s 30\n' "$sleep_bin" > "$binder/quota" || return 1
+    chmod +x "$binder/df" "$binder/quota" || return 1
+
+    out="$(timeout 20 env -u TMPDIR USER="$slug" PATH="$binder" TMPDIR_PROBE_TIMEOUT=1 \
+        bash -c '
+            source '"$REPO_ROOT"'/conf.d/05_tmpdir.bash
+            [[ -n "$TMPDIR" && -d "$TMPDIR" && -w "$TMPDIR" ]] || exit 1
+            printf %s "$TMPDIR"
+        ' 2>/dev/null)" || return 1
+    [[ "$out" == "/tmp/$slug-tmp" ]]
+}
+check "tmpdir hung probes (df/quota never return -> fallback)" tmpdir_hung_probe_check
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo "─────────────────────────────────────────"
 if (( _failures == 0 )); then
