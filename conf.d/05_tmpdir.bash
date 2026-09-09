@@ -137,14 +137,49 @@ TMPDIR_BLACKLIST="/sys/* /proc/* /run/lock /run/user/*"
 
 # ── Internal helpers ─────────────────────────────────────────────────────────
 
-# _check_quota_avail_mb MOUNTPOINT
+# _tmpfs_has_quota MOUNTPOINT
+# Returns 0 when the tmpfs at MOUNTPOINT was mounted with a quota option
+# (usrquota / grpquota, Linux >= 6.6), 1 otherwise.
+# Pure Bash over /proc/mounts to view mount options without touching any mount.
+# The last matching entry wins, so an over-mount is read correctly.
+_tmpfs_has_quota() {
+    local mountpoint="$1" _dev mnt _type opts _rest has=1
+    [[ -r /proc/mounts ]] || return 1
+    while read -r _dev mnt _type opts _rest; do
+        [[ "$mnt" == "$mountpoint" ]] || continue
+        case ",${opts}," in
+            *,usrquota,*|*,grpquota,*|*,quota,*|*,usrquota=*|*,grpquota=*) has=0 ;;
+            *) has=1 ;;
+        esac
+    done < /proc/mounts
+    return "$has"
+}
+
+# _check_quota_avail_mb MOUNTPOINT [FSTYPE]
+# Emits the quota-limited free space (MiB) for the caller's user on MOUNTPOINT,
+# or returns 1 when no quota applies or none can be determined.
 _check_quota_avail_mb() {
     local mountpoint="$1"
+    local fstype="${2:-}"
+
+    # tmpfs carries a per-user quota only when mounted with a quota option
+    # (Linux >= 6.6); without one, quota(1) would only pay for its
+    # mount-table scan and answer "none".
+    # devtmpfs and ramfs have no quota mechanism at all.
+    # Capacity is otherwise bounded by the courtesy cap in _effective_avail_mb.
+    case "$fstype" in
+        tmpfs)          _tmpfs_has_quota "$mountpoint" || return 1 ;;
+        devtmpfs|ramfs) return 1 ;;
+    esac
 
     command -v quota >/dev/null 2>&1 || return 1
 
+    # -i (--no-autofs): do not touch autofs trigger directories or
+    # the mounts beneath them during quota's mount-table scan, which otherwise
+    # blocks on a flaky or unreachable automounted share.
+    # -l would skip NFS mounts as well, but quota ignores it when -f is given.
     local qout
-    qout="$(quota -f "$mountpoint" -w -p 2>/dev/null)" || return 1
+    qout="$(quota -i -f "$mountpoint" -w -p 2>/dev/null)" || return 1
 
     local used_kb='' limit_kb='' line
     local -a fields
@@ -182,7 +217,7 @@ _effective_avail_mb() {
     [[ -z "$fs_avail" || -z "$mountpoint" ]] && return 1
 
     local quota_mb
-    quota_mb="$(_check_quota_avail_mb "$mountpoint")"
+    quota_mb="$(_check_quota_avail_mb "$mountpoint" "$fstype")"
 
     if [[ -n "$quota_mb" ]]; then
         (( quota_mb < fs_avail )) && echo "$quota_mb" || echo "$fs_avail"
@@ -438,7 +473,7 @@ if [[ -z "${TMPDIR_NO_AUTORUN:-}" ]]; then
     unset -f _pick_tmpdir _validate_existing_tmpdir _effective_avail_mb \
         _check_quota_avail_mb _secure_mkdir _apply_selinux_label \
         _classify_tmpfs _is_tmpfs_blacklisted _selinux_active \
-        _mac_system
+        _mac_system _tmpfs_has_quota
     unset TMPDIR_MIN_MB TMPDIR_SELINUX_TYPE TMPDIR_GENERAL_TMPFS \
         TMPDIR_BLACKLIST
 fi
