@@ -37,6 +37,26 @@
 #     running it on macOS would fail mid-flight.
 #   - Cygwin / MSYS: skipped entirely; native Windows temp handling applies.
 #
+# Hang protection:
+#
+#   Both external probes used here, df(1) and quota(1),
+#   scan the whole mount table on every call, not just the provided path(s).
+#   quota(1) in particular `statfs()`es every mounted filesystem
+#   before it honours -f, so a dead NFS server or a stalled autofs trigger
+#   anywhere on the host blocks it, and with it the whole shell startup.
+#   Three independent guards keep selection bounded:
+#     - quota(1) is consulted on tmpfs only when the mount carries
+#       a quota option (Linux >= 6.6, read from /proc/mounts), and
+#       never for devtmpfs or ramfs.
+#       On hosts without such quotas that covers every Phase 1 candidate and
+#       the common inherited /dev/shm TMPDIR in Phase 0.
+#     - quota(1) runs with -i (--no-autofs) so autofs trigger directories, and
+#       every mount beneath them, are left untouched.
+#       (-l would skip NFS as well, but quota ignores it whenever -f is given.)
+#     - Every df(1) / quota(1) invocation goes through _tmpdir_probe, which
+#       caps it at TMPDIR_PROBE_TIMEOUT seconds via GNU timeout(1);
+#       a probe that is cut off simply counts as "no answer".
+#
 # Idempotent: a previously selected TMPDIR that still validates is reused as-is
 # (Phase 0), so re-sourcing converges on the same path without churn.
 #

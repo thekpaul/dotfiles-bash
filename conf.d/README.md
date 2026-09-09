@@ -33,6 +33,8 @@ and other essential behavior that all subsequent scripts depend on.
 - [05 TMPDIR](./05_tmpdir.bash):
   Selects and exports a persistent, sticky-bit-hardened per-user `TMPDIR`,
   preferring fast tmpfs scratch space.
+  Every `df`/`quota` probe is time-boxed and `quota` skips `autofs` and
+  quota-less tmpfs, so a hung NFS share cannot stall startup.
 - [09 sysexits](./09_sysexits.bash):
   `sysexits.h` exit-status constants (`EX_*`) for use throughout this
   configuration.
