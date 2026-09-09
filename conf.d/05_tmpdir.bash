@@ -101,6 +101,13 @@ esac
 # Minimum effective space (MiB) a candidate must offer to be viable.
 TMPDIR_MIN_MB=1024
 
+# Upper bound (seconds) on external probes (df, quota) during selection.
+# Both tools scan the whole mount table, so a hung mount anywhere on the host
+# would otherwise block shell startup indefinitely.
+# Applied via GNU timeout(1); without it probes run unbounded as before.
+# An inherited environment value wins, so callers (and tests) can tighten it.
+: "${TMPDIR_PROBE_TIMEOUT:=2}"
+
 # SELinux type to apply to TMPDIR via chcon.
 # Empty disables relabeling.
 # user_tmp_t is the most broadly accessible label achievable without root under
@@ -136,6 +143,21 @@ TMPDIR_GENERAL_TMPFS="/dev/shm /tmp /var/tmp /run /run/user/*"
 TMPDIR_BLACKLIST="/sys/* /proc/* /run/lock /run/user/*"
 
 # ── Internal helpers ─────────────────────────────────────────────────────────
+
+# _tmpdir_probe COMMAND [ARG...]
+# Runs COMMAND under GNU timeout(1) capped at TMPDIR_PROBE_TIMEOUT seconds.
+# SIGTERM is followed by SIGKILL one second later (-k) because
+# a process stuck in an NFS `statfs()` only responds to fatal signals.
+# Falls back to running COMMAND directly when timeout(1) is unavailable.
+# Exit status is the command's own, or 124/137 when cut off;
+# callers treat any non-zero status as "no usable answer".
+_tmpdir_probe() {
+    if command -v timeout >/dev/null 2>&1; then
+        timeout -k 1 "$TMPDIR_PROBE_TIMEOUT" "$@"
+    else
+        "$@"
+    fi
+}
 
 # _tmpfs_has_quota MOUNTPOINT
 # Returns 0 when the tmpfs at MOUNTPOINT was mounted with a quota option
@@ -177,9 +199,10 @@ _check_quota_avail_mb() {
     # -i (--no-autofs): do not touch autofs trigger directories or
     # the mounts beneath them during quota's mount-table scan, which otherwise
     # blocks on a flaky or unreachable automounted share.
-    # -l would skip NFS mounts as well, but quota ignores it when -f is given.
+    # -l is deliberately absent: quota ignores it when -f is given, so
+    # a hung statically mounted NFS share is bounded by _tmpdir_probe alone.
     local qout
-    qout="$(quota -i -f "$mountpoint" -w -p 2>/dev/null)" || return 1
+    qout="$(_tmpdir_probe quota -i -f "$mountpoint" -w -p 2>/dev/null)" || return 1
 
     local used_kb='' limit_kb='' line
     local -a fields
@@ -208,8 +231,8 @@ _effective_avail_mb() {
     command -v df >/dev/null 2>&1 || return 1
 
     local info
-    info="$(df --output=avail,size,fstype,target -m "$path" 2>/dev/null \
-            | tail -1)"
+    info="$(_tmpdir_probe df --output=avail,size,fstype,target -m "$path" \
+            2>/dev/null | tail -1)"
     [[ -z "$info" ]] && return 1
 
     local fs_avail total_mb fstype mountpoint
@@ -421,7 +444,8 @@ _pick_tmpdir() {
                     fi
                     ;;
             esac
-        done < <(df --output=avail,target -m -t tmpfs 2>/dev/null | tail -n +2)
+        done < <(_tmpdir_probe df --output=avail,target -m -t tmpfs 2>/dev/null \
+                 | tail -n +2)
 
         # Prefer A → B; within the chosen tier, the largest already won.
         if   [[ -n "$best_a" ]]; then best="$best_a"
@@ -473,9 +497,9 @@ if [[ -z "${TMPDIR_NO_AUTORUN:-}" ]]; then
     unset -f _pick_tmpdir _validate_existing_tmpdir _effective_avail_mb \
         _check_quota_avail_mb _secure_mkdir _apply_selinux_label \
         _classify_tmpfs _is_tmpfs_blacklisted _selinux_active \
-        _mac_system _tmpfs_has_quota
-    unset TMPDIR_MIN_MB TMPDIR_SELINUX_TYPE TMPDIR_GENERAL_TMPFS \
-        TMPDIR_BLACKLIST
+        _mac_system _tmpfs_has_quota _tmpdir_probe
+    unset TMPDIR_MIN_MB TMPDIR_PROBE_TIMEOUT TMPDIR_SELINUX_TYPE \
+        TMPDIR_GENERAL_TMPFS TMPDIR_BLACKLIST
 fi
 
 # ── Direct execution: emit the selected TMPDIR as a basic diagnostic ─────────
